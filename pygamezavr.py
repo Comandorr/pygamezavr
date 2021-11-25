@@ -103,22 +103,18 @@ class Group(sprite.Group):
 # reset = blit image into the game window
 # move = replace sprite to new coordinates
 class SimpleSprite(sprite.Sprite):
-    def __init__(self, img, x, y):
+    def __init__(self, img, pos):
         super().__init__()
         self.image = img
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.x = x
-        self.y = y
+        self.rect.topleft = pos
+        self.x , self.y = pos
         self.screen = display.get_surface()
-    def replace(self, x, y):
-        self.x = x
-        self.y = y
+    def replace(self, pos):
+        self.x, self.y = pos
     def reset(self):
-        self.rect.x = self.x
-        self.rect.y = self.y
-        self.screen.blit(self.image, (self.rect.x, self.rect.y))
+        self.rect.topleft = (self.x, self.y)
+        self.screen.blit(self.image, (self.rect.topleft))
 
 
 # class for text sprites with font size, coordinates, color and background
@@ -142,19 +138,24 @@ class SimpleText(sprite.Sprite):
         self.screen.blit(self.image, self.position)
 
 
-run = True
-def run_game(func):
-    create_window()
+def stop_game():
     global run
+    run = False
+
+
+create_window()
+FRAMES = 0
+run = True
+start_time = time.get_ticks()
+time_passed = 0
+def run_game(func):
+    global run, FRAMES, start_time, time_passed
     while run:
         for e in event.get():
             if e.type == QUIT:
                 run = False
         func()
         display.update()
+        FRAMES += 1
         clock.tick(60)
-
-
-def stop_game():
-    global run
-    run = False
+        time_passed = time.get_ticks() - start_time
