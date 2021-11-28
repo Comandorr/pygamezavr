@@ -34,6 +34,9 @@ def chance(x, max = 101):
 def create_window(w=0, h=0):
     global window, win_w, win_h, center_x, center_y
     window = display.set_mode((w, h),  vsync = 1) #FULLSCREEN, OPENGL,
+    win_w = window.get_rect().width
+    win_h = window.get_rect().height
+    (center_x, center_y) = window.get_rect().center
     return window
 
 
@@ -120,22 +123,41 @@ class SimpleSprite(sprite.Sprite):
 # class for text sprites with font size, coordinates, color and background
 # setText - sets text, reset - resets
 class SimpleText(sprite.Sprite):
-    def __init__(self, text, size, x, y, color = black, background = None):
+    def __init__(self, pos, text='text', size=36, color = black, background = None):
         super().__init__()
-        self.image = font.Font(None, size).render(text, 1, color, background)
-        self.position = [x, y]
-        self.size = size
+        self.position = pos
         self.color = color
+        self.text = text
+        self.font = font.Font(None, size)
         self.background = background
+        self.image = self.font.render(text, 1, color, background)
         self.rect = self.image.get_rect()
         self.screen = display.get_surface()
     def setText(self, text):
-        self.image = font.Font(None, self.size).render(text, 1, self.color, self.background)
+        self.image = self.font.render(text, 1, self.color, self.background)
         self.rect = self.image.get_rect()
     def reset(self):
         self.rect.x = self.position[0]
         self.rect.y = self.position[1]
         self.screen.blit(self.image, self.position)
+
+
+class SimpleButton(SimpleText):
+    def __init__(self, pos, text='ok', size=36, color = black, background = None):
+        super().__init__(pos, text, size, color, background)
+
+    def update(self):
+        if mouse.get_pressed()[0] and self.rect.collidepoint(mouse.get_pos()):
+            self.image = self.font.render(self.text, 1, self.color, white)
+        else:
+            self.image = self.font.render(self.text, 1, self.color, self.background)
+
+    def press(self):
+        if self.rect.collidepoint(mouse.get_pos()):
+            self.click()
+
+    def click(self):
+        pass
 
 
 def stop_game():
@@ -151,9 +173,8 @@ time_passed = 0
 def run_game(func):
     global run, FRAMES, start_time, time_passed
     while run:
-        for e in event.get():
-            if e.type == QUIT:
-                run = False
+        for e in event.get(eventtype=QUIT):
+            run = False
         func()
         display.update()
         FRAMES += 1
