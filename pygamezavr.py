@@ -102,33 +102,60 @@ class Group(sprite.Group):
             s.reset()
 
 
+class Basic(sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.visible = True
+        self.screen = display.get_surface()
+        self.fade = 0
+
+    def reset(self):
+        self.rect.topleft = (self.x, self.y)
+        if self.fade != 0:
+            self.image.set_alpha(self.image.get_alpha() + self.fade)
+            if self.image.get_alpha() in [0, 255]:
+                self.fade = 0
+        if self.rect.right < 0   or self.rect.left > win_w or \
+           self.rect.top > win_h or self.rect.bottom < 0:
+            self.visible = False
+        else:
+            self.visible = True
+        if self.visible:
+            self.screen.blit(self.image, self.rect.topleft)
+
+    def fade_in(self, speed=1):
+        self.fade = speed
+    def fade_out(self, speed=1):
+        self.fade = -speed
+    def replace(self, pos):
+        self.x, self.y = pos
+
+
 # class for simple sprites, containing image (path, size) and coordinates
 # reset = blit image into the game window
 # move = replace sprite to new coordinates
-class SimpleSprite(sprite.Sprite):
+class SimpleSprite(Basic):
     def __init__(self, img, pos):
         super().__init__()
         self.image = img
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
-        self.x , self.y = pos
-        self.screen = display.get_surface()
-    def replace(self, pos):
         self.x, self.y = pos
-    def reset(self):
-        self.rect.topleft = (self.x, self.y)
-        self.screen.blit(self.image, (self.rect.topleft))
+    def fade_in(self, speed=1):
+        self.fade = speed
+    def fade_out(self, speed=1):
+        self.fade = -speed
 
 
 # class for text sprites with font size, coordinates, color and background
 # setText - sets text, reset - resets
-class SimpleText(sprite.Sprite):
-    def __init__(self, pos, text='text', size=36, color = black, background = None):
+class SimpleText(Basic):
+    def __init__(self, pos, text='text', size=36, color = black, background = None, f = None):
         super().__init__()
-        self.position = pos
+        self.x, self.y = pos
         self.color = color
         self.text = text
-        self.font = font.Font(None, size)
+        self.font = font.Font(f, size)
         self.background = background
         self.image = self.font.render(text, 1, color, background)
         self.rect = self.image.get_rect()
@@ -136,26 +163,17 @@ class SimpleText(sprite.Sprite):
     def setText(self, text):
         self.image = self.font.render(text, 1, self.color, self.background)
         self.rect = self.image.get_rect()
-    def reset(self):
-        self.rect.x = self.position[0]
-        self.rect.y = self.position[1]
-        self.screen.blit(self.image, self.position)
 
 
 class SimpleButton(SimpleText):
-    def __init__(self, pos, text='ok', size=36, color = black, background = None):
-        super().__init__(pos, text, size, color, background)
-
     def update(self):
         if mouse.get_pressed()[0] and self.rect.collidepoint(mouse.get_pos()):
             self.image = self.font.render(self.text, 1, self.color, white)
         else:
             self.image = self.font.render(self.text, 1, self.color, self.background)
-
     def press(self):
         if self.rect.collidepoint(mouse.get_pos()):
             self.click()
-
     def click(self):
         pass
 
