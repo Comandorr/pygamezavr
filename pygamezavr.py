@@ -102,6 +102,26 @@ class Group(sprite.Group):
             s.reset()
 
 
+
+class Animation():
+    def __init__(self, images, period):
+        self.images = images
+        self.current = 0
+        self.frame = 0
+        self.period = period
+    def update(self):
+        self.frame += 1
+        if self.frame == self.period:
+            self.frame = 0
+            self.current += 1
+            if self.current >= len(self.images):
+                self.current = 0
+    def animate(self):
+        return self.images[self.current]
+
+
+# reset = blit image into the game window
+# move = replace sprite to new coordinates
 class Basic(sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -127,13 +147,11 @@ class Basic(sprite.Sprite):
         self.fade = speed
     def fade_out(self, speed=1):
         self.fade = -speed
-    def replace(self, pos):
-        self.x, self.y = pos
+    def replace(self, x, y):
+        self.x, self.y = x, y
 
 
 # class for simple sprites, containing image (path, size) and coordinates
-# reset = blit image into the game window
-# move = replace sprite to new coordinates
 class SimpleSprite(Basic):
     def __init__(self, img, pos):
         super().__init__()
